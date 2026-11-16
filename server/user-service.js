@@ -6,10 +6,11 @@ const mysql = require("mysql2");
 const con = mysql.createConnection({
   host: "127.0.0.1",
   port: 3306,
-//  complete the code here
-
-
-
+  //  complete the code here
+  user: "root",
+  password: "",
+  database: "week12_class",
+  charset: "utf8mb4"
 
 });
 
@@ -94,7 +95,12 @@ app.post("/register", async (req, res) => {
     // สร้าง SQL โดยให้ mysql.format แทนค่า ?
     // เก็บข้อมูลลงตาราง users 
     // complete the code here
+    const sql = mysql.format(
+      "INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+      [name.trim(), email.trim().toLowerCase(), passwordHash]
+    );
 
+    await queryDB(sql);
 
 
     res.status(201).json({ access: false, message: "สมัครสมาชิกสำเร็จ กรุณา Login" });
@@ -122,9 +128,12 @@ app.post("/login", async (req, res) => {
       return res.status(400).json({ access: false, message: "ข้อมูลไม่ถูกต้อง" });
     // สร้าง SQL โดยให้ mysql.format แทนค่า ? เพื่ออ่านข้อมูลผู้ใช้จากตาราง users
     // complete the code here
+    const sql = mysql.format(
+      "SELECT id, name, password FROM users WHERE email = ? LIMIT 1",
+      [email.trim().toLowerCase()]
+    );
 
-
-
+    const rows = await queryDB(sql);
 
     const user = rows[0];
     if (!user || !(await checkPassword(password, user.password))) {
@@ -135,7 +144,7 @@ app.post("/login", async (req, res) => {
       id: user.id,
       name: user.name,
     };
-    res.cookie("userId", user.id, {maxAge: 1000 * 60 *10, path: "/" });
+    res.cookie("userId", user.id, { maxAge: 1000 * 60 * 10, path: "/" });
 
     res.json({ message: "เข้าสู่ระบบสำเร็จ", access: true });
   } catch {
@@ -159,9 +168,8 @@ app.post("/logout", (req, res) => {
     }
     // ลบ cookie sessionId และ userId โดยให้ path เป็น / เพื่อให้เบราว์เซอร์ลบ cookie ทั้งหมดที่เกี่ยวข้องกับ session
     // complete the code here
-
-    
-
+    res.clearCookie("sessionId", { path: "/" });
+    res.clearCookie("userId", { path: "/" });
 
     res.json({ message: "ออกจากระบบสำเร็จ", access: false });
   });

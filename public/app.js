@@ -1,10 +1,10 @@
 // 1. ส่วนแสดงผล: สลับฟอร์ม Login / Register
 function setMode(mode) {
-  const form = document.getElementsByName("form")[0];
+  const form = document.getElementById("form");
   form.reset();
   document.getElementById("message").textContent = "";
   document.getElementById("nameField").hidden = mode !== "register";
-  form.name.required = mode === "register";
+  form.elements.namedItem("name").required = mode === "register";
   form.password.autocomplete = mode === "register" ? "new-password" : "current-password";
   document.getElementById("title").textContent = mode === "register" ? "สมัครสมาชิก" : "เข้าสู่ระบบ";
   document.getElementById("submit").textContent = mode === "register" ? "Register" : "Login";
@@ -16,16 +16,22 @@ function setMode(mode) {
 // 2. สมัครสมาชิก: ส่งข้อมูลไปยัง User Service ผ่าน Gateway
 async function register(event) {
   event.preventDefault();
-  const form = document.getElementsByName("form")[0];
+  const form = document.getElementById("form");
   const button = document.getElementById("submit");
   button.disabled = true;
   try {
     const output = await fetch("/users/register", {
       // ส่งข้อมูลไปยัง User Service ผ่าน Gateway
       // complete the code here
-
-
-
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        name: form.elements.namedItem("name").value,
+        email: form.elements.namedItem("email").value,
+        password: form.elements.namedItem("password").value
+      })
     });
     const result = await output.json();
     if (output.ok) setMode("login");
@@ -40,14 +46,22 @@ async function register(event) {
 // 3. Login: เบราว์เซอร์รับ Cookie จาก User Service
 async function login(event) {
   event.preventDefault();
-  const form = document.getElementsByName("form")[0];
+  const form = document.getElementById("form");
   const button = document.getElementById("submit");
   button.disabled = true;
   try {
     const output = await fetch("/users/login", {
       // ส่งข้อมูลไปยัง User Service ผ่าน Gateway
-    //  complete the code here
-
+      //  complete the code here
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        email: form.elements.namedItem("email").value,
+        password: form.elements.namedItem("password").value
+      })
 
     });
     const result = await output.json();
@@ -64,9 +78,10 @@ async function login(event) {
 async function checkAuth() {
   try {
     const output = await fetch("/users/session", {
-    // ส่ง request ไปยัง User Service ผ่าน Gateway เพื่อให้ User Service ตรวจ session และส่งผลกลับมา
-    // complete the code here
-
+      // ส่ง request ไปยัง User Service ผ่าน Gateway เพื่อให้ User Service ตรวจ session และส่งผลกลับมา
+      // complete the code here
+      method: "GET",
+      credentials: "include"
 
     });
     const result = await output.json();
@@ -79,9 +94,10 @@ async function checkAuth() {
 // 5. ดึงสินค้า: Product Service ตรวจ session ก่อนอ่านฐานข้อมูล
 async function loadProducts() {
   const output = await fetch("/products", {
-  //  ส่ง request ไปยัง Product Service ผ่าน Gateway เพื่อให้ Product Service ตรวจ session และส่งผลกลับมา
-  // complete the code here
-
+    //  ส่ง request ไปยัง Product Service ผ่าน Gateway เพื่อให้ Product Service ตรวจ session และส่งผลกลับมา
+    // complete the code here
+    method: "GET",
+    credentials: "include"
 
 
 
@@ -117,7 +133,7 @@ async function loadProducts() {
   }
   document.getElementById("auth").hidden = true;
   document.getElementById("shop").hidden = false;
-  document.getElementsByName("form")[0].reset();
+  document.getElementById("form").reset();
 }
 
 // 6. Logout: server ลบ session และสั่งให้เบราว์เซอร์ลบ Cookie
@@ -128,7 +144,8 @@ async function logout() {
     const output = await fetch("/users/logout", {
       // ส่ง request ไปยัง User Service ผ่าน Gateway เพื่อให้ User Service ลบ session และสั่งให้เบราว์เซอร์ลบ Cookie
       // complete the code here
-
+      method: "POST",
+      credentials: "include"
 
     });
     const result = await output.json();

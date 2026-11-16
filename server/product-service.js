@@ -10,9 +10,9 @@ const con = mysql.createConnection({
   host: "127.0.0.1",
   port: 3306,
   // complete the code here
-
-
-
+  user: "root",
+  password: "",
+  database: "week12_class",
   charset: "utf8mb4",
 });
 
@@ -92,11 +92,10 @@ app.get("/", async (req, res) => {
     });
     // ถ้า session ถูกต้อง ให้ดึงข้อมูลสินค้า
     // complete the code here
-    
+    const sql = "SELECT id, name, price FROM product ORDER BY id ASC";
 
+    const rows = await queryDB(sql);
 
-
-    
     res.json(rows);
   } catch (error) {
     if (error.response && error.response.status === 401) {
